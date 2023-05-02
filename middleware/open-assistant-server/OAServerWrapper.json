@@ -1,0 +1,10 @@
+{
+	"projectUUID": "<your UID>",
+	"version": "1",
+	"name": "",
+	"authors": [],
+	"databaseURI": "<DB URI>",
+	"authenticationEnabled": false,
+	"debugModeEnabled": true,
+	"logVerbosity": "ERROR" // possible values are "NONE", "WARNING", "INFO", "DEBUG", "TRACE", "ALL"
+}
