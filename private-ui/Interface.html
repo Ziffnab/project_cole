@@ -1,0 +1,48 @@
+from flask import Flask, render_template
+import json
+app = Flask(__name__)
+@app.route('/')
+def index():
+    return render_template('index.html', conversations=[{"text": "Hi, how can I assist you?", "user": False}])
+
+@app.route("/converse", methods=["GET"])
+def converse():
+    user_input = request.args.get("user_input")
+    response = {"text": "", "user": True}
+
+    if (not user_input):
+        response["text"] = ""
+    elif ("hello" in user_input):
+      new_response = "Hello! How can I assist you today?"
+      response["text"] = new_response
+
+    session['messages'].append(json.dumps({**request.form, **{'id': len(session['messages']) + 1}}))
+    session['users'].append(user_input)
+    session['conversation_log'] = session['messages'][-len(session['users'])::-1]
+
+    user_id = [x['username'] for x in session['users']][-1]
+
+    update_messages = []
+
+    for i in reversed(list(set(session['users']))):
+        messages = [m for m in session['messages'] if m['id'].startswith(str(i))]
+
+        updated = list()
+
+        for j in range(max([0, messages[-1]['id'] - messages[0]['id'] - 1])):
+            id = messages[j]['id']
+            username = session['users'][j]['username']
+
+            try:
+                msg = messages[j]['msg']
+                while True:
+                    response = json.loads(f'''SELECT * FROM chatbot_{username}_responses WHERE id="{id}"''').first()
+                    if 'error' in response:
+                        raise Exception
+                    if 'no' in response:
+                        if (j > 0):
+                            break
+                        continue
+                    else:
+                        response = f'''
+                        SELECT * FROM chatbot_{username}_responses WHERE question="{msg}"'''.format(*response).replace(f"\n\t\t", "")
